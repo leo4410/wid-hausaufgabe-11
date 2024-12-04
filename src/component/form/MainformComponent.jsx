@@ -12,7 +12,7 @@ import WgsresultComponent from "../result/WgsresultComponent";
 import LvformComponent from "./LvformComponent";
 import LvresultComponent from "../result/LvresultComponent";
 
-const SWISSTOPO_URL = "https://geodesy.geo.admin.ch/reframe/";
+const SWISSTOPO_URL = "http://localhost:8000/";
 
 function MainformComponent() {
   const [transformation, setTransformation] = useState(1);
@@ -37,16 +37,21 @@ function MainformComponent() {
     var query = SWISSTOPO_URL;
 
     if (transformation === 1) {
-      query = query + "lv95towgs84?easting=" + east + "&northing=" + north;
+      query = query + "lv95wgs84?E=" + east + "&N=" + north;
     } else if (transformation === 2) {
-      query = query + "wgs84tolv95?easting=" + ycoord + "&northing=" + xcoord;
+      query = query + "wgs84lv95?lng=" + ycoord + "&lat=" + xcoord;
     }
 
     var responsedata = await fetch(query);
 
     if (responsedata.status === 200) {
       var jsondata = await responsedata.json();
-      setResult(jsondata.coordinates);
+      console.log(jsondata)
+      if(jsondata.system === "WGS84"){
+        setResult([jsondata.latitude, jsondata.longitude]);
+      } else if (jsondata.system === "LV95"){
+        setResult([jsondata.E, jsondata.N]);
+      }
     } else {
       setError([responsedata.status]);
     }
